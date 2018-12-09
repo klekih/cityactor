@@ -14,7 +14,7 @@ func main() {
 
 	// now start the "walker"
 	// (the timer which advances our position)
-	walkerChan := StartWalker(config)
+	walkerChan := StartWalker(config, nil)
 
 	finished := false
 	for finished != true {

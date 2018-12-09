@@ -3,10 +3,15 @@ package main
 import (
 	"fmt"
 	"time"
+	"os"
 )
 
 var ticker *time.Ticker
 var myRoute *Route
+var currentInstructionIndex int = -1
+var currentPosInInstruction float64 = 0
+var averageSpeed float64 = 10 // meter/second
+
 
 // WalkerStatus is the answer for reporting walker status
 type WalkerStatus struct {
@@ -14,10 +19,14 @@ type WalkerStatus struct {
 }
 
 // StartWalker is the main entry point for starting a walker
-func StartWalker(config *Config) chan WalkerStatus {
+func StartWalker(config *Config, city *CityInterface) chan WalkerStatus {
 
 	// first, get a route to go on
 	myRoute = getRoute(config)
+
+	if len(myRoute.Paths) == 0 {
+		panic("Route has no path to go on")
+	}
 
 	fmt.Println("Got route, going on it")
 
@@ -28,9 +37,8 @@ func StartWalker(config *Config) chan WalkerStatus {
 	ticker = time.NewTicker(duration * time.Millisecond)
 
 	go func() {
-		for t := range ticker.C {
-			fmt.Println("tick at ", t)
-			advance()
+		for range ticker.C {
+			advance(city)
 		}
 	}()
 
@@ -48,14 +56,35 @@ func getRoute(config *Config) *Route {
 	return route
 }
 
-func advance() {
+func advance(city *CityInterface) {
 
 	if myRoute == nil {
 		panic("No route to go on")
 	}
 
-	if len(myRoute.Paths) == 0 {
-		panic("Route has no path to go on")
+	// Find out which step from instruction are we on.
+	// Begin with first if needed
+	if (currentInstructionIndex == -1) {
+		currentInstructionIndex = 1
 	}
 
+	// Check if all instructions have been passed.
+	if len(myRoute.Paths[0].Instructions) <= currentInstructionIndex {
+		fmt.Println("Route finished")
+		os.Exit(0)
+	}
+
+	// Get the current distance to cover
+	currentInstruction := myRoute.Paths[0].Instructions[currentInstructionIndex]
+	distance := currentInstruction.Distance
+
+	currentPosInInstruction += averageSpeed
+
+	if currentPosInInstruction >= distance {
+		currentInstructionIndex += 1;
+		currentPosInInstruction = 0
+	} else {	
+		fmt.Println("On", currentInstruction.StreetName, ":",
+		currentPosInInstruction, "of", distance)
+	}
 }
