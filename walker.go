@@ -14,15 +14,17 @@ type WalkerStatus struct {
 }
 
 // StartWalker is the main entry point for starting a walker
-func StartWalker(period int) chan WalkerStatus {
+func StartWalker(config *Config) chan WalkerStatus {
 
 	// first, get a route to go on
-	myRoute = getRoute()
+	myRoute = getRoute(config)
+
+	fmt.Println("Got route, going on it")
 
 	// create the chan to report back the status
 	c := make(chan WalkerStatus)
 
-	duration := time.Duration(period)
+	duration := time.Duration(config.SimulationStep)
 	ticker = time.NewTicker(duration * time.Millisecond)
 
 	go func() {
@@ -35,9 +37,9 @@ func StartWalker(period int) chan WalkerStatus {
 	return c
 }
 
-func getRoute() *Route {
+func getRoute(config *Config) *Route {
 
-	route, err := generateRandomRoute()
+	route, err := generateRandomRoute(config)
 
 	if err != nil {
 		panic(err)

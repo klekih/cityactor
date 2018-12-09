@@ -14,7 +14,7 @@ func main() {
 
 	// now start the "walker"
 	// (the timer which advances our position)
-	walkerChan := StartWalker(config.SimulationStep)
+	walkerChan := StartWalker(config)
 
 	finished := false
 	for finished != true {

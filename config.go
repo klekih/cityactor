@@ -6,6 +6,9 @@ import "fmt"
 
 type Config struct {
 	SimulationStep int `json:"simulationStep"` // given in milliseconds
+
+	GetRouteRetries int `json:"getRouteRetries"` // how many times to try getting a route
+	
 }
 
 func getConfig() *Config {
