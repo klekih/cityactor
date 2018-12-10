@@ -81,7 +81,7 @@ func advance(city *CityInterface) {
 	currentPosInInstruction += averageSpeed
 
 	if currentPosInInstruction >= distance {
-		currentInstructionIndex += 1;
+		currentInstructionIndex += 1
 		currentPosInInstruction = 0
 	} else {	
 		fmt.Println("On", currentInstruction.StreetName, ":",
