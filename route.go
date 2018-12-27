@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 )
 
 // Route is the json equivalent of the graphhopper answer for
@@ -55,18 +55,19 @@ type Route struct {
 }
 
 func generateRandomRoute(config *Config) (rt *Route, err error) {
+
 	link := "http://localhost:8989/route?point=46.748654%2C23.535461&point=46.792942%2C23.664862&locale=en-US&vehicle=car&weighting=fastest&elevation=false&use_miles=false&layer=Omniscale&points_encoded=false"
 
 	retries := config.GetRouteRetries
-	
+
 	resp, err := http.Get(link)
 
 	for (retries > 0) && (err != nil) {
 		fmt.Println("No valid link for getting route, retrying")
-			
+
 		resp, err = http.Get(link)
-		
-		retries -= 1
+
+		retries--
 	}
 
 	if err != nil {

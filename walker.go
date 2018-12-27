@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"os"
+	"time"
 )
 
 var ticker *time.Ticker
 var myRoute *Route
-var currentInstructionIndex int = -1
-var currentPosInInstruction float64 = 0
+var currentInstructionIndex = -1
+var currentPosInInstruction float64
 var averageSpeed float64 = 10 // meter/second
-
 
 // WalkerStatus is the answer for reporting walker status
 type WalkerStatus struct {
@@ -64,7 +63,7 @@ func advance(city *CityInterface) {
 
 	// Find out which step from instruction are we on.
 	// Begin with first if needed
-	if (currentInstructionIndex == -1) {
+	if currentInstructionIndex == -1 {
 		currentInstructionIndex = 1
 	}
 
@@ -81,10 +80,10 @@ func advance(city *CityInterface) {
 	currentPosInInstruction += averageSpeed
 
 	if currentPosInInstruction >= distance {
-		currentInstructionIndex += 1
+		currentInstructionIndex++
 		currentPosInInstruction = 0
-	} else {	
+	} else {
 		fmt.Println("On", currentInstruction.StreetName, ":",
-		currentPosInInstruction, "of", distance)
+			currentPosInInstruction, "of", distance)
 	}
 }

@@ -4,11 +4,16 @@ import "encoding/json"
 import "os"
 import "fmt"
 
+// Config is the corresponding go structure of the json configuration file
 type Config struct {
-	SimulationStep int `json:"simulationStep"` // given in milliseconds
-
-	GetRouteRetries int `json:"getRouteRetries"` // how many times to try getting a route
-	
+	SimulationStep  int `json:"simulationStep"`
+	GetRouteRetries int `json:"getRouteRetries"`
+	BoundingBox     struct {
+		First  string `json:"first"`
+		Second string `json:"second"`
+		Third  string `json:"third"`
+		Fourth string `json:"fourth"`
+	} `json:"boundingBox"`
 }
 
 func getConfig() *Config {
