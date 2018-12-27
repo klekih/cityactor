@@ -63,7 +63,7 @@ func generateRandomRoute(config *Config) (rt *Route, err error) {
 	resp, err := http.Get(link)
 
 	for (retries > 0) && (err != nil) {
-		fmt.Println("No valid link for getting route, retrying")
+		fmt.Println("No valid link for getting route, retrying", err)
 
 		resp, err = http.Get(link)
 
