@@ -11,8 +11,6 @@ type Config struct {
 	BoundingBox     struct {
 		First  string `json:"first"`
 		Second string `json:"second"`
-		Third  string `json:"third"`
-		Fourth string `json:"fourth"`
 	} `json:"boundingBox"`
 }
 

@@ -29,6 +29,8 @@ func StartWalker(config *Config, city *CityInterface) chan WalkerStatus {
 
 	fmt.Println("Got route, going on it")
 
+	chanReport := Connect()
+
 	// create the chan to report back the status
 	c := make(chan WalkerStatus)
 
@@ -37,7 +39,7 @@ func StartWalker(config *Config, city *CityInterface) chan WalkerStatus {
 
 	go func() {
 		for range ticker.C {
-			advance(city)
+			advance(city, chanReport)
 		}
 	}()
 
@@ -55,7 +57,7 @@ func getRoute(config *Config) *Route {
 	return route
 }
 
-func advance(city *CityInterface) {
+func advance(city *CityInterface, chanReport chan Report) {
 
 	if myRoute == nil {
 		panic("No route to go on")
@@ -86,4 +88,10 @@ func advance(city *CityInterface) {
 		fmt.Println("On", currentInstruction.StreetName, ":",
 			currentPosInInstruction, "of", distance)
 	}
+
+	fmt.Println("Report to the city")
+	chanReport <- Report{
+		location: Location{
+			Long: 10.0,
+			Lat:  20.0}}
 }

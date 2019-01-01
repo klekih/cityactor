@@ -2,9 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // Route is the json equivalent of the graphhopper answer for
@@ -54,9 +59,48 @@ type Route struct {
 	} `json:"paths"`
 }
 
+// Point is a simple structure for a map point with longitude and latitude
+type Point struct {
+	long float64
+	lat  float64
+}
+
 func generateRandomRoute(config *Config) (rt *Route, err error) {
 
-	link := "http://localhost:8989/route?point=46.748654%2C23.535461&point=46.792942%2C23.664862&locale=en-US&vehicle=car&weighting=fastest&elevation=false&use_miles=false&layer=Omniscale&points_encoded=false"
+	// Choose random points from the bounding box.
+	// The bounding box should have two points which represent
+	// the opposite corners of a square. Two random points from within
+	// this square are choosed to define a route's start and finish.
+
+	// default values if something goes wrong
+	p1CoordLong := 46.748654
+	p1CoordLat := 23.53546
+	p2CoordLong := 46.792942
+	p2CoordLat := 23.664862
+
+	first, err := parseCoordinates(config.BoundingBox.First)
+	second, err := parseCoordinates(config.BoundingBox.Second)
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	p1CoordLong = first.long + r.Float64()*(second.long-first.long)
+	p1CoordLat = first.lat + r.Float64()*(second.lat-first.lat)
+
+	p2CoordLong = first.long + r.Float64()*(second.long-first.long)
+	p2CoordLat = first.lat + r.Float64()*(second.lat-first.lat)
+
+	link := fmt.Sprintf("%s%f%s%f%s%f%s%f%s",
+		"http://localhost:8989/route?point=",
+		p1CoordLong,
+		"%2C",
+		p1CoordLat,
+		"&point=",
+		p2CoordLong,
+		"%2C",
+		p2CoordLat,
+		"&locale=en-US&vehicle=car&weighting=fastest&elevation=false&use_miles=false&layer=Omniscale&points_encoded=false")
+
+	fmt.Println("Tyring link:", link)
 
 	retries := config.GetRouteRetries
 
@@ -81,4 +125,30 @@ func generateRandomRoute(config *Config) (rt *Route, err error) {
 	json.Unmarshal(body, &route)
 
 	return &route, nil
+}
+
+func parseCoordinates(strCoord string) (pt *Point, err error) {
+	arrCoord := strings.Split(strCoord, ",")
+	if len(arrCoord) < 2 {
+		fmt.Println("Bad coordinates on", arrCoord)
+		return nil, errors.New("Too few arguments in")
+	}
+	long, err1 := strconv.ParseFloat(arrCoord[0], 64)
+	lat, err2 := strconv.ParseFloat(arrCoord[1], 64)
+
+	var finalErrStr string
+
+	if err1 != nil {
+		finalErrStr = fmt.Sprintf("%s%s", finalErrStr, err1)
+	}
+
+	if err2 != nil {
+		finalErrStr = fmt.Sprintf("%s%s", finalErrStr, err2)
+	}
+
+	var finalErr error
+	if finalErrStr != "" {
+		finalErr = errors.New(finalErrStr)
+	}
+	return &Point{long: long, lat: lat}, finalErr
 }
