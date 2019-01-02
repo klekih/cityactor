@@ -22,27 +22,30 @@ type Location struct {
 // Report is the base type for reporting status and vectors
 // to a city entity
 type Report struct {
-	location Location
+	Loc Location
 }
 
 // Connect is the typical method used for connecting to
 // a city.
 func Connect() chan Report {
-	conn, err := net.Dial("tcp", "localhost:7450")
-	if err != nil {
-
-	}
-	fmt.Println("connected to city server")
-	enc := gob.NewEncoder(conn)
 
 	var sendChan = make(chan Report)
 
 	go func() {
 		for {
-			r := <-sendChan
-			err := enc.Encode(r)
-			if err != nil {
-
+			select {
+			case r := <-sendChan:
+				conn, err := net.Dial("tcp", "localhost:7450")
+				if err != nil {
+					fmt.Println("Error on dialing", err)
+					break
+				}
+				defer conn.Close()
+				enc := gob.NewEncoder(conn)
+				err = enc.Encode(r)
+				if err != nil {
+					fmt.Println("Error on sending data", err)
+				}
 			}
 		}
 	}()

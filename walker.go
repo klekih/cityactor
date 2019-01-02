@@ -91,7 +91,7 @@ func advance(city *CityInterface, chanReport chan Report) {
 
 	fmt.Println("Report to the city")
 	chanReport <- Report{
-		location: Location{
+		Loc: Location{
 			Long: 10.0,
 			Lat:  20.0}}
 }
