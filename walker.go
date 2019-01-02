@@ -29,7 +29,7 @@ func StartWalker(config *Config, city *CityInterface) chan WalkerStatus {
 
 	fmt.Println("Got route, going on it")
 
-	chanReport := Connect()
+	reportChan, junctionChan := Connect()
 
 	// create the chan to report back the status
 	c := make(chan WalkerStatus)
@@ -38,8 +38,13 @@ func StartWalker(config *Config, city *CityInterface) chan WalkerStatus {
 	ticker = time.NewTicker(duration * time.Millisecond)
 
 	go func() {
-		for range ticker.C {
-			advance(city, chanReport)
+		for {
+			select {
+			case <-ticker.C:
+				advance(city, reportChan, junctionChan)
+			case j := <-junctionChan:
+				fmt.Println("Received answer with junction", j)
+			}
 		}
 	}()
 
@@ -57,7 +62,7 @@ func getRoute(config *Config) *Route {
 	return route
 }
 
-func advance(city *CityInterface, chanReport chan Report) {
+func advance(city *CityInterface, chanReport chan Report, junctionChan chan Junction) {
 
 	if myRoute == nil {
 		panic("No route to go on")
@@ -94,4 +99,6 @@ func advance(city *CityInterface, chanReport chan Report) {
 		Loc: Location{
 			Long: 10.0,
 			Lat:  20.0}}
+
+	junctionChan <- Junction{}
 }
